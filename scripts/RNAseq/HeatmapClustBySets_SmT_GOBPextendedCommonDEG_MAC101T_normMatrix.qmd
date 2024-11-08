@@ -14,7 +14,9 @@ format:
 
 # A - Description
 
-The heatmap was constructed for SmT DEGs of the MAC101 strain, in comparison with SmO bacteria, falling into the two main clusters of enriched GO terms (for Biological process category), identified previously during GO enrichment analysis. These DEGs are shared between the two different strains (LU439 SmT1 and/or T3 with MAC101 SmT), and had the following settings : Log2FoldChange\< -1 and pvalue\<0.05).
+The heatmap was constructed for SmT DEGs of the MAC101 strain, in comparison with SmO bacteria, falling into the two main clusters of enriched GO terms (for Biological process category), 
+identified previously during GO enrichment analysis. These DEGs are shared between the two different strains (LU439 SmT1 and/or T3 with MAC101 SmT), 
+and had the following settings : Log2FoldChange\< -1 and pvalue\<0.05).
 
 Use of following tutorial:
 
