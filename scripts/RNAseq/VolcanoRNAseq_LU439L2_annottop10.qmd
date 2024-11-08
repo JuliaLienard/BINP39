@@ -1,0 +1,156 @@
+---
+title: "RNAseq for M. avium strain LU439 SmT1 versus SmO2 bacteria - Volcano plot with labelling of the top 10 DEGs"
+author: "Julia Lienard"
+date: "2024/05"
+format:
+  pdf:
+    keep-tex: true # these settings are to make sure there is no overflowing text when render
+    include-in-header: 
+       text: |
+         \usepackage{fvextra}
+         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+         \DefineVerbatimEnvironment{OutputCode}{Verbatim}{breaklines,commandchars=\\\{\}}
+---
+
+## Description
+
+RNAseq analysis was performed on four replicates of SmO2 or SmT1 bacteria of Mycobacterium avium subspecies hominissuis strain LU439. Gene expression analysis was performed using DESeq2 by Giulia Ribeiro and the output table with the detected genes differentially expressed was used to create a Volcano plot
+
+## Required packages
+
+```{r}
+#library(tidyverse) to install: install.packages("tidyverse")
+#library(ggplot2) to install: install.packages("ggplot2")
+#library(ggrepel) # to annotate the plot. to install: install.packages("ggrepel")
+```
+
+## Loading the data
+
+```{r}
+library(readr)
+
+# Input data are the gene expression analysis done using DESeq2 by Giulia Ribeiro : LU439L2_DESeq2_dataAllAnnot.txt
+
+DESeq2_dataAllAnnot <- read_delim("~/Desktop/Master/BINP39/RNAseq_visualization/LU439/1_data/2_RNAseq/1_LU439L2/2_DESeq2_data/DESeq2_data_fullAnnot/LU439L2_DESeq2_dataAllAnnot.txt", delim = "\t", escape_double = FALSE, 
+    trim_ws = TRUE, show_col_types = FALSE)
+
+head(DESeq2_dataAllAnnot)
+```
+
+## Plotting
+
+### Selecting the data
+
+```{r}
+library(tidyverse)
+
+# Create a column that label not significant genes, SmT up and SmO up genes based on cut-offs:
+# Create a new column to flag DEGs
+DESeq2_dataAllAnnot$SignDEG <- 'Not significant' 
+
+# Significant DEGs are defined as absolute log2FoldChange > 1 and pvalue < 0.05
+DESeq2_dataAllAnnot$SignDEG[DESeq2_dataAllAnnot$log2FoldChange > 1 & DESeq2_dataAllAnnot$padj < 0.05] <- 'SmO upregulated'
+DESeq2_dataAllAnnot$SignDEG[DESeq2_dataAllAnnot$log2FoldChange < -1 & DESeq2_dataAllAnnot$padj < 0.05] <- 'SmT upregulated'
+
+# selecting the top 10 DEG for each samples; SmO2 or SmT1 bacteria
+top <- 10
+topDEG <- bind_rows(DESeq2_dataAllAnnot |> 
+                      filter(SignDEG == 'SmT upregulated') |>
+                      arrange(desc(abs(log2FoldChange))) |> head(top),
+                    DESeq2_dataAllAnnot |> 
+                      filter(SignDEG == 'SmO upregulated') |>
+                      arrange(desc(abs(log2FoldChange))) |> head(top)
+)
+```
+
+### Extracting data for the top 10 DEG as a table
+
+```{r}
+topDEG_filt <- topDEG %>% subset(select = c(1,7,12))
+
+write_csv(topDEG_filt, "LU439_lin2_top10DEG.csv")
+```
+
+### Setting the theme
+
+```{r}
+  theme_set(theme_classic(base_size = 15) + 
+            theme(
+              axis.title.x = element_text(hjust = 0.5, margin = margin(20,0,0,0), size = 12, color = 'black'),
+              axis.title.y = element_text(margin = margin(0,20,0,0), size = 12, color = 'black'),
+              plot.title = element_text(hjust = 0.5)
+            ))
+```
+
+### Plotting
+
+```{r}
+library(ggplot2)
+library(ggrepel) # to annotate the plot
+
+# to get the total number of DEGs for SmT and if needed use this number for the Volcano plot title
+DEG_SmT <- sum(DESeq2_dataAllAnnot$SignDEG == 'SmT upregulated')
+# to get the total number of DEGs for SmO and if needed use this number for the Volcano plot title
+DEG_SmO <- sum(DESeq2_dataAllAnnot$SignDEG == 'SmO upregulated') 
+# to get the total number of non significant DEGs and if needed use this number for the Volcano plot title
+notDEG <- sum(DESeq2_dataAllAnnot$SignDEG == 'Not significant') 
+
+# use this tutorial https://ggrepel.slowkow.com/articles/examples.html
+# choose colors for plots here: https://sape.inf.usi.ch/quick-reference/ggplot2/colour
+
+volcano <- ggplot(data = DESeq2_dataAllAnnot) +
+  geom_point(mapping = aes(x=log2FoldChange, 
+                           y=-log10(padj), 
+                           fill=SignDEG), 
+             color = 'black', 
+             stroke = 0.3, 
+             size = 3.5, 
+             shape = 21) +
+  scale_fill_manual(values = c("gray90", 
+                               "hotpink2", 
+                               "turquoise")) +
+  geom_vline(xintercept=c(-1, 1), 
+             col = 'gray60',
+             linetype = 'dashed') +
+  geom_hline(yintercept = c(-log10(0.05)),
+             col = 'gray60',
+             linetype = 'dashed' ) +
+  coord_cartesian(ylim=c(0, 80), xlim=c(-10,10)) +
+  scale_x_continuous(breaks = seq(-10, 10, 2)) + 
+  annotate(geom="text", x=5, y=80, 
+           label="SmO up =513", color="black") +
+  annotate(geom="text", x=-5, y=80, 
+           label="SmT up =588", color="black") +
+  labs(title = 
+  'RNAseq LU439 SmT Lin1 vs SmO Lin2',
+       x='Log2 Fold Change',
+       y='-log10(adjust. pval)',
+       fill = '') +
+  guides (fill = guide_legend(position = "bottom"))
+
+volcano <- volcano + 
+  geom_label_repel(data = topDEG,
+                   mapping = aes(log2FoldChange,-log10(padj), label = product_PGAP),
+                  min.segment.length = 0, # to always draw the line from dot to label
+                  size = 4, # font size label
+                  max.overlaps = Inf, # even if label overlap, always plot them
+                  box.padding = 1.5)
+
+volcano
+
+ggsave(
+  "Volcano2_DESeq_LU439L2_annotbig.pdf",
+  plot = last_plot(),
+  width = 15,
+  height = 15,
+  dpi = 300
+)
+
+ggsave(
+  "Volcano2_DESeq_LU439L2_annot.pdf",
+  plot = last_plot(),
+  width = 6,
+  height = 8,
+  dpi = 300
+)
+```
