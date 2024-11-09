@@ -1,0 +1,123 @@
+---
+title: "Circos_DNAmethylation - Common CDS methylated sites  - MAC101"
+author: "Julia Lienard"
+format: pdf
+editor: visual
+---
+
+## Loading libraries
+
+```{r}
+library(circlize)
+library(readr)
+```
+
+## Loading data frame with methylated sites within CDS
+
+```{r}
+methyl_CDS <- read_delim("O242O251T257T278_COMMONmethyl_cds.txt", 
+    delim = "\t", escape_double = FALSE, 
+    trim_ws = TRUE)
+
+```
+
+## Preparing data for plotting
+
+```{r}
+# filter methylation type and gene strand - with at least 80% reads with methylated site
+methyl_CDS_StPOS_6mA <- methyl_CDS %>% filter(Gene_strand == "+" & Methylation_type == "6mA" & Percent_modified > 0.8)
+methyl_CDS_StNEG_6mA <- methyl_CDS %>% filter(Gene_strand == "-" & Methylation_type == "6mA" & Percent_modified > 0.8)
+
+methyl_CDS_StPOS_4mC <- methyl_CDS %>% filter(Gene_strand == "+" & Methylation_type == "4mC" & Percent_modified > 0.8)
+methyl_CDS_StNEG_4mC <- methyl_CDS %>% filter(Gene_strand == "-" & Methylation_type == "4mC" & Percent_modified > 0.8)
+```
+
+## Plotting for Common CDS - Percent 0.8 - 6mA
+
+```{r}
+png("circlize_MAC101_Commonmethyl_6mACDS.png", width = 850, height = 800, res = 150)  # Set resolution and dimensions
+
+# Adjust circular plot parameters
+circos.par("track.height" = 0.2)
+circos.initialize(factors = methyl_CDS_StNEG_6mA$Methylation_type, x = methyl_CDS_StNEG_6mA$Methylation_pos)
+
+# track 1 - 6mA CDS on negative strand (higher number of positions among df)
+circos.track(methyl_CDS_StNEG_6mA$Methylation_type, 
+             y = methyl_CDS_StNEG_6mA$Percent_modified,
+             panel.fun = function(x, y) {
+        circos.text(CELL_META$xcenter, 
+            CELL_META$cell.ylim[2] + mm_y(6), 
+            CELL_META$sector.index)
+        circos.axis(labels.cex = 0.3) # size label genomic positions
+})
+
+# CELL_META$cell.ylim[1] is the minimum y-value in the cell.
+# CELL_META$cell.ylim[2] is the maximum y-value in the cell.
+
+# track 2 - 6mA CDS on positive strand
+circos.track(methyl_CDS_StPOS_6mA$Methylation_type, 
+             y = methyl_CDS_StPOS_6mA$Percent_modified)
+
+circos.lines(methyl_CDS_StPOS_6mA$Methylation_pos, methyl_CDS_StPOS_6mA$Percent_modified, type = "h", straight = FALSE,
+             col="magenta4", sector.index = get.current.sector.index(),
+    track.index = 1)
+
+circos.lines(methyl_CDS_StNEG_6mA$Methylation_pos, methyl_CDS_StNEG_6mA$Percent_modified, type = "h", straight = FALSE,
+             col="purple", sector.index = get.current.sector.index(),
+    track.index = 2)
+
+
+
+# Add a title
+title("MAC101 \n methylated \n CDS", line = -12, cex.main = 1.5)  # Adjust line for vertical position and size as needed
+
+# Add legend outside the circular plot
+legend("topleft", legend = c("6mA-strand(+) n=956", "6mA-strand(-) n=1153"),
+       col = c("magenta4", "purple"), lty = 1, lwd = 2, cex = 0.8, box.lty = 0)  # Customize position and style
+
+# Clear and close
+circos.clear()
+dev.off()
+
+```
+
+```{r}
+png("circlize_MAC101_Commonmethyl_4mC_CDS.png", width = 850, height = 800, res = 150)  # Set resolution and dimensions
+
+# Adjust circular plot parameters
+circos.par("track.height" = 0.2)
+circos.initialize(factors = methyl_CDS_StNEG_4mC$Methylation_type, x = methyl_CDS_StNEG_4mC$Methylation_pos)
+
+# track 1 - 4mC CDS on negative strand (higher number of positions among df)
+circos.track(methyl_CDS_StNEG_4mC$Methylation_type, 
+             y = methyl_CDS_StNEG_4mC$Percent_modified,
+             panel.fun = function(x, y) {
+        circos.text(CELL_META$xcenter, 
+            CELL_META$cell.ylim[2] + mm_y(6), 
+            CELL_META$sector.index)
+        circos.axis(labels.cex = 0.3) # size label genomic positions
+})
+
+# track 2 - 4mC CDS on positive strand
+circos.track(methyl_CDS_StPOS_4mC$Methylation_type, 
+             y = methyl_CDS_StPOS_4mC$Percent_modified)
+
+circos.lines(methyl_CDS_StPOS_4mC$Methylation_pos, methyl_CDS_StPOS_4mC$Percent_modified, type = "h", straight = FALSE,
+             col="turquoise4", sector.index = get.current.sector.index(),
+    track.index = 1)
+
+circos.lines(methyl_CDS_StNEG_4mC$Methylation_pos, methyl_CDS_StNEG_4mC$Percent_modified, type = "h", straight = FALSE,
+             col="turquoise3", sector.index = get.current.sector.index(),
+    track.index = 2)
+
+# Add a title
+title("MAC101 \n methylated \n sites in CDS", line = -12, cex.main = 1.5)  # Adjust line for vertical position and size as needed
+
+# Add legend outside the circular plot
+legend("topleft", legend = c("4mC-strand(+) n=143", "4mC-strand(-) n=204"),
+       col = c("turquoise4", "turquoise3"), lty = 1, lwd = 2, cex = 0.8, box.lty = 0)  # Customize position and style
+
+# Clear and close
+circos.clear()
+dev.off()
+```
