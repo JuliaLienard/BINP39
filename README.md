@@ -23,9 +23,8 @@ LU439 SmO and SmT genomes were aleady available from previous work. But for MAC1
 
 The computations/data handling were enabled by resources provided by the National Academic Infrastructure for Supercomputing in Sweden (NAISS), partially funded by the Swedish Research Council through grant agreement no. 2022-06725.
 
-On <https://github.com/JuliaLienard/BINP39> :
 
-Scripts only desribed by name in the Readme are found in the script folder.
+Scripts only described by name in the Readme are found in the script folder.
 
 # PART A - Functional analysis of RNA sequencing data
 
