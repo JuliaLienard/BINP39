@@ -1,0 +1,224 @@
+---
+title: "Gene ontology enrichment for RNAseq analysis of  strain LU439 samples L2, L3 and strain MAC101p6 (ClusterProfiler package)"
+author: "Julia Lienard"
+date: "2024-06"
+format:
+  pdf:
+    keep-tex: true # these settings are to make sure there is no overflowing text when render
+    include-in-header: 
+       text: |
+         \usepackage{fvextra}
+         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+         \DefineVerbatimEnvironment{OutputCode}{Verbatim}{breaklines,commandchars=\\\{\}}
+editor: visual
+---
+
+Use of the complete genome annotation with Blast2GO, Interpro, Mycobacteria database from LU439T1 to map the RNAseq data of all samples, including MAC101 to be able to compare the data. Common differentially expressed genes (DEGs) are the one shared between the 3 pairs or at least between the two strains (called extended common DEGs)
+
+## Required packages
+
+```{r}
+library(tidyverse)
+
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("clusterProfiler")
+library(clusterProfiler)
+library(enrichplot)
+```
+
+## Principle of the script
+
+![](images/Pipeline-01.png){width="504"}
+
+## Loading the data
+
+```{r}
+library(tidyverse)
+# Opening the formatted genome annotation file (output table from FormatBlast2go.R):
+Ref_GO <- read.delim("~/Desktop/Master/BINP39/RNAseq_visualization/LU439/1_data/1_genomeLU439T1_Blast2Goannotation/Pgap_B2GO_InterPro_EggNOG/Filt_by_GOonly_split/LU439_SmT_CDS_FULL_GOannot_Filt_GOsplit.txt", header = TRUE, sep = "\t")
+
+# Opening the RNAseq results analysis: common DEGs identified by Giulia Ribeiro for SmT samples:
+Common_SmT_DEG <- read.table("~/Desktop/Master/BINP39/RNAseq_visualization/LU439_L2_L3_MAC101p6/REF_LU439T1genome/01_data/DESeq2_commonDEGs/Extended_common/SmT_commonDEGs_extended.csv", header = TRUE, sep = "\t")
+
+# Opening the RNAseq results analysis: common DEGs identified by Giulia Ribeiro for SmO samples:
+Common_SmO_DEG <- read.delim("~/Desktop/Master/BINP39/RNAseq_visualization/LU439_L2_L3_MAC101p6/REF_LU439T1genome/01_data/DESeq2_commonDEGs/Extended_common/SmO_commonDEGs_extended.csv")
+```
+
+## Preparing the data
+
+```{r}
+# Removing unwanted character in front of the pgap annotation
+Common_SmT_DEG$ID <- gsub("cds-", "", as.character(Common_SmT_DEG$ID))
+colnames(Common_SmT_DEG)[1] <- "pgap_ID"
+
+Common_SmO_DEG$ID <- gsub("cds-", "", as.character(Common_SmO_DEG$ID))
+colnames(Common_SmO_DEG)[1] <- "pgap_ID"
+
+# Preparing the variables TERM2GENE, TERM2NAME, required for enricher function from the reference annotation filtered for Biological Process (BP)
+
+TERM2GENE_BP <- Ref_GO |> filter(GO_category == "Biological Process") |>
+  select(GO_ID, pgap_ID)
+
+TERM2NAME_BP <- Ref_GO |> filter(GO_category == "Biological Process") |>
+  select(GO_ID, GO_name)
+
+Ref_GO_BP <- Ref_GO |> filter(GO_category == "Biological Process")
+```
+
+## Extracting list of DEGs for enrichment analysis
+
+### Set to : Log2FoldChange \> 1 (all DEGs in the list have already p value \< 0.05)
+
+```{r}
+# SmT
+SmT_up_1 <- subset(Common_SmT_DEG, select = c(1)) 
+names(SmT_up_1) <- NULL
+SmT_up_1 <- SmT_up_1[,1]
+
+# SmO
+SmO_up_1 <- subset(Common_SmO_DEG, select = c(1)) 
+names(SmO_up_1) <- NULL
+SmO_up_1 <- SmO_up_1[,1]
+```
+
+## Enrichment Biological Processes GO terms -SmT
+
+```{r}
+library(clusterProfiler)
+# Enrichment analysis
+smt_BP <- enricher(gene = SmT_up_1,
+                            pvalueCutoff = 0.05,
+                            qvalueCutoff = 0.05,
+                            pAdjustMethod = "fdr",
+                            universe = Ref_GO_BP$pgap_ID ,
+                            minGSSize = 5,
+                            maxGSSize = 500,
+                            TERM2GENE = TERM2GENE_BP,
+                            TERM2NAME = TERM2NAME_BP)
+
+```
+
+### Dotplot graph for enrichment analysis
+
+```{r}
+#| fig-cap: "Dotplot for Enrichment Biological Processes GO terms -SmT"
+#| fig-width: 10
+#| fig-height: 8
+
+# Plotting
+library(enrichplot)
+
+# setting the parameters for the plot
+options(enrichplot.colours = c("violetred2","cyan"), font.size =10)
+layout.params = list(layout = "kk")
+cex.params = list(category_node = 1.5)
+
+dotplot(smt_BP, showCategory=15, font.size = 10, label_format = 40) +
+labs(title ="LU439 SmT Lin1, Lin3 and MAC101p6 - Enricher",
+     subtitle = " 185 extended common DEGs (FC>1)
+     Biological Process")
+
+ggsave("LU439TL1L3MAC101p6_refLUT1_EnricherBPExtended_FC1_dotplot.pdf", 
+       plot = last_plot(),
+       width = 6,
+       height = 6,
+       dpi = 300)
+```
+
+### Cnetplot for clustering the enriched GO terms
+
+```{r}
+#| fig-cap: "Cnetplot for clustering of the Enrichment Biological Processes GO terms -SmT"
+#| fig-width: 10
+#| fig-height: 8
+
+cex.params = list(category_label = 0.5, gene_label = 0.4, font_face = 2)
+cnetplot(smt_BP, 
+         node_label="category", 
+         showCategory=15, 
+         layout = "kk", 
+         colorEdge = TRUE, 
+         cex_category =0.5,
+         cex.params = cex.params) +
+labs(title ="LU439 SmT Lin1, Lin3 and MAC101p6 - Enricher",
+     subtitle = " 185 extended common DEGs (FC>1)
+     Biological Process") +
+  guides(
+    category = guide_colourbar(position = "top"),
+    size   = guide_legend(position = "bottom")
+  ) +
+  theme(legend.position = "right")
+
+ggsave("LU439TL1L3MAC101p6_refLUT1_EnricherBPExtended_FC1_cnetplot.pdf", plot = last_plot(),
+       width = 6,
+       height = 6,
+       dpi = 300)
+```
+
+## Enrichment Biological Processes GO terms -SmO
+
+```{r}
+# Enrichment analysis
+smo_BP <- enricher(gene = SmO_up_1,
+                            pvalueCutoff = 0.05,
+                            qvalueCutoff = 0.05,
+                            pAdjustMethod = "fdr",
+                            universe = Ref_GO_BP$pgap_ID ,
+                            minGSSize = 5,
+                            maxGSSize = 500,
+                            TERM2GENE = TERM2GENE_BP,
+                            TERM2NAME = TERM2NAME_BP)
+```
+
+### Dotplot graph for enrichment analysis
+
+```{r}
+#| fig-cap: "Dotplot for Enrichment Biological Processes GO terms -SmO"
+#| fig-width: 10
+#| fig-height: 8
+
+# Plotting
+dotplot(smo_BP, showCategory=12, font.size = 10, label_format = 40) +
+labs(title ="LU439 SmO Lin2, Lin3 and MAC101p6 - Enricher",
+     subtitle = " 181 extended common DEGs (FC>1)
+     Biological Process")
+
+ggsave("LU439O2O3MAC101p6_refLUT1_EnricherBPExtended_FC1_dotplot.pdf", plot = last_plot(),
+       width = 5.5,
+       height = 6,
+       dpi = 300)
+```
+
+### Cnetplot for clustering the enriched GO terms
+
+```{r}
+#| fig-cap: "Cnetplot for clustering of the Enrichment Biological Processes GO terms -SmO"
+#| fig-width: 10
+#| fig-height: 8
+
+cex.params = list(category_label = 0.5, gene_label = 0.4, font_face = 2)
+cnetplot(smo_BP, 
+         node_label="category", 
+         showCategory=15, 
+         layout = "kk", 
+         colorEdge = TRUE, 
+         cex_category = 0.5,
+         cex.params = cex.params) +
+labs(title ="LU439 SmO Lin2, Lin3 and MAC101p6 - Enricher",
+     subtitle = " 181 extended common3 DEGs (FC>1)
+     Biological Process") +
+  guides(
+    category = guide_colourbar(position = "top"),
+    size   = guide_legend(position = "bottom")
+  ) +
+  theme(legend.position = "right")
+
+ggsave("LU439O2O3MAC101p6_refLUT1_EnricherBPExtended_FC1_cnetplot.pdf", plot = last_plot(),
+       width = 5,
+       height = 5,
+       dpi = 300)
+```
+
+### 
