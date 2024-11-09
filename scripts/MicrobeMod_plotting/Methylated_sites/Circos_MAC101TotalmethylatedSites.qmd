@@ -1,0 +1,105 @@
+---
+title: "Circos_DNAmethylation - Total sites  - LU439"
+author: "Julia Lienard"
+format: pdf
+editor: visual
+---
+
+## Loading libraries
+
+```{r}
+library(circlize)
+library(readr)
+```
+
+## Loading data frame with methylated sites within CDS
+
+```{r}
+methyl_LU_T1 <- read_delim("T1/Basecall2/03_MicrobeMod_cutOff0.7_JL/439_SmT_lin2_uny_assembly_methylated_sites.tsv", 
+    delim = "\t", escape_double = FALSE, 
+    trim_ws = TRUE)
+
+methyl_LU_O2 <- read_delim("O2/03_MicrobeMod_cutOff0.7_JL/439_SmO_lin2_uny_assembly_methylated_sites.tsv", 
+    delim = "\t", escape_double = FALSE, 
+    trim_ws = TRUE)
+```
+
+## Preparing data for plotting
+
+```{r}
+# 1) LU439_T1
+# filter Percent_modified < 0.85
+methyl_LU_T1_filt <- methyl_LU_T1 %>% filter(Percent_modified > 0.8)
+
+# 2) LU439_O2
+# filter Percent_modified < 0.85
+methyl_LU_O2_filt <- methyl_LU_O2 %>% filter(Percent_modified > 0.8)
+```
+
+## Plotting for LU329_T1 - Percent 0.8
+
+```{r}
+# Adjust circular plot parameters
+circos.par("track.height" = 0.2)
+circos.initialize(factors = methyl_LU_O2_filt$Modification, x = methyl_LU_O2_filt$Position)
+
+# track 1
+circos.track(methyl_LU_O2_filt$Modification, 
+             y = methyl_LU_O2_filt$Percent_modified,
+             panel.fun = function(x, y) {
+        circos.text(CELL_META$xcenter, 
+            CELL_META$cell.ylim[3] + mm_y(5), 
+            CELL_META$sector.index)
+        circos.axis(labels.cex = 0.3) # size label genomic positions
+})
+circos.lines(methyl_LU_O2_filt$Position, methyl_LU_O2_filt$Percent_modified, type = "h", straight = FALSE,
+             col="blue", sector.index = get.current.sector.index(),
+    track.index = 1)
+```
+
+## Plotting for LU329_T1 & O2 - Percent 0.8
+
+```{r}
+png("circlize_LU439_T1O2_6mA_TOT.png", width = 850, height = 800, res = 150)  # Set resolution and dimensions
+
+# Adjust circular plot parameters
+circos.par("track.height" = 0.2)
+circos.initialize(factors = methyl_LU_O2_filt$Modification, x = methyl_LU_O2_filt$Position)
+
+# track 1
+circos.track(methyl_LU_O2_filt$Modification, 
+             y = methyl_LU_O2_filt$Percent_modified,
+             panel.fun = function(x, y) {
+        circos.text(CELL_META$xcenter, 
+            CELL_META$cell.ylim[2] + mm_y(6), 
+            CELL_META$sector.index)
+        circos.axis(labels.cex = 0.3) # size label genomic positions
+})
+
+# CELL_META$cell.ylim[1] is the minimum y-value in the cell.
+# CELL_META$cell.ylim[2] is the maximum y-value in the cell.
+
+# track 2
+circos.track(methyl_LU_T1_filt$Modification, 
+             y = methyl_LU_T1_filt$Percent_modified)
+
+circos.lines(methyl_LU_O2_filt$Position, methyl_LU_O2_filt$Percent_modified, type = "h", straight = FALSE,
+             col="blue", sector.index = get.current.sector.index(),
+    track.index = 1)
+
+circos.lines(methyl_LU_T1_filt$Position, methyl_LU_T1_filt$Percent_modified, type = "h", straight = FALSE,
+             col="red", sector.index = get.current.sector.index(),
+    track.index = 2)
+
+# Add a title
+title("LU439 \n 6mA methylated \n sites", line = -12, cex.main = 1.5)  # Adjust line for vertical position and size as needed
+
+# Add legend outside the circular plot
+legend("topleft", legend = c("LU439_O2", "LU439_T1"),
+       col = c("blue", "red"), lty = 1, lwd = 2, cex = 0.8, box.lty = 0)  # Customize position and style
+
+# Clear and close
+circos.clear()
+dev.off()
+
+```
