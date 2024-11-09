@@ -7,7 +7,14 @@ Description: The script uses the table with identified missing genes ID of genom
 using GenAPi. From this table of geneID, the gff annotation file from genome B is parsed to retrieve the
 corresponding gene product and output that, with the geneID in a txt file.
 
-Usage: python GenAPI_GFFparsing.py MissingGeneGenomeA.txt GenomeB.gff
+Output from GenAPI is gene_presence_absence_2024-10-24.txt
+awk command to extract Gene ID missing from one genome compared to the other :
+# get gene ID of missing genes in genome 1:
+awk-F'\t''$2 == 0 {split($1, a, "_"); print a[1] "_" a[2]}'gene_presence_absence_2024-10-24.txt > gene_Genome2_missing_Genome1.txt
+
+Use the output with the current python script:
+
+Usage: python GenAPI_GFFparsing.py gene_Genome2_missing_Genome1.txt Genome1.gff
 
 """
 
