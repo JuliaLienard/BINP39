@@ -52,7 +52,7 @@ with open(Methylation_table, "r") as MethylTable:
 
 
 with open(GFF_file, "r") as GFF:
-	next(GFF)
+	next(GFF) # should be refined here, but was a quick and dirty solution..
 	next(GFF)
 	next(GFF)
 	next(GFF)
