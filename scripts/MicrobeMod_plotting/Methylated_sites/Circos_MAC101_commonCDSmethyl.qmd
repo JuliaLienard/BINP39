@@ -72,7 +72,7 @@ circos.lines(methyl_CDS_StNEG_6mA$Methylation_pos, methyl_CDS_StNEG_6mA$Percent_
 title("MAC101 \n methylated \n CDS", line = -12, cex.main = 1.5)  # Adjust line for vertical position and size as needed
 
 # Add legend outside the circular plot
-legend("topleft", legend = c("6mA-strand(+) n=956", "6mA-strand(-) n=1153"),
+legend("topleft", legend = c("6mA-strand(+) n=2873", "6mA-strand(-) n=3136"),
        col = c("magenta4", "purple"), lty = 1, lwd = 2, cex = 0.8, box.lty = 0)  # Customize position and style
 
 # Clear and close
@@ -114,7 +114,7 @@ circos.lines(methyl_CDS_StNEG_4mC$Methylation_pos, methyl_CDS_StNEG_4mC$Percent_
 title("MAC101 \n methylated \n sites in CDS", line = -12, cex.main = 1.5)  # Adjust line for vertical position and size as needed
 
 # Add legend outside the circular plot
-legend("topleft", legend = c("4mC-strand(+) n=143", "4mC-strand(-) n=204"),
+legend("topleft", legend = c("4mC-strand(+) n=305", "4mC-strand(-) n=346"),
        col = c("turquoise4", "turquoise3"), lty = 1, lwd = 2, cex = 0.8, box.lty = 0)  # Customize position and style
 
 # Clear and close
