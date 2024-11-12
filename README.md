@@ -770,7 +770,7 @@ genovi -i $InputAnnot -o O242_genoviWoptions -s complete -te --cogs 5 -cs autumn
 
 # --cogs 5 : Only the top 5 COG will be plotted
 # -te: add space in the ideogram explaining each track.
-# -cs blossom: color palette autumn
+# -cs autumn: color palette autumn
 ```
 
 ## 4 - Genome alignments using mummer2circos
