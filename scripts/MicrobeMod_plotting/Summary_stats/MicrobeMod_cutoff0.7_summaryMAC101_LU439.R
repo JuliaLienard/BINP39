@@ -4,8 +4,8 @@
 # Loading data 
 library(readxl)
 library(dplyr)
-MicrobeMod_cutoff0_7_summaryMAC101 <- read_excel("/Volumes/nmt_project/Data/Methylation/MicrobeMod/Dorado_6mA_5mC_4mA/MAC101/MicrobeMod_cutoff0.7_summaryMAC101.xlsx")
-MicrobeMod_cutoff0_7_summaryLU439 <- read_excel("/Volumes/nmt_project/Data/Methylation/MicrobeMod/Dorado_6mA_5mC_4mA/LU439/Plots/MicrobeMod_cutoff0.7_summaryLU439.xlsx")
+MicrobeMod_cutoff0_7_summaryMAC101 <- read_excel("MicrobeMod_cutoff0.7_summaryMAC101.xlsx")
+MicrobeMod_cutoff0_7_summaryLU439 <- read_excel("MicrobeMod_cutoff0.7_summaryLU439.xlsx")
 MicrobeMod_cutoff0_7_summary_MAC101_LU439 <- bind_rows(MicrobeMod_cutoff0_7_summaryMAC101,MicrobeMod_cutoff0_7_summaryLU439)
 
 # 1 ) Methylation detection quality (% map reads)
