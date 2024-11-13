@@ -35,13 +35,16 @@ ggsave("MAC101_LU439_Methylation_qual_stats.png", MethylationQual, width = 7, he
 
 # 2) STREME 6mA - Grouping samples by motifs
 # STREME MOTIFS 6mA - statistics -Grouping the motifs
-MicrobeMod_cutoff0_7_summarySTREMEMAC101 <- read_excel("/Volumes/nmt_project/Data/Methylation/MicrobeMod/Dorado_6mA_5mC_4mA/MAC101/MicrobeMod_cutoff0.7_summarySTREMEMAC101.xlsx")
-MicrobeMod_cutoff0_7_summarySTREMELU439 <- read_excel("/Volumes/nmt_project/Data/Methylation/MicrobeMod/Dorado_6mA_5mC_4mA/LU439/Plots/MicrobeMod_cutoff0.7_summarySTREMELU439.xlsx")
+MicrobeMod_cutoff0_7_summarySTREMEMAC101 <- read_excel("MicrobeMod_cutoff0.7_summarySTREMEMAC101.xlsx")
+MicrobeMod_cutoff0_7_summarySTREMELU439 <- read_excel("MicrobeMod_cutoff0.7_summarySTREMELU439.xlsx")
 MicrobeMod_cutoff0_7_summarySTREMEMAC101_LU439 <- bind_rows(MicrobeMod_cutoff0_7_summarySTREMEMAC101,MicrobeMod_cutoff0_7_summarySTREMELU439)
 MicrobeMod_cutoff0_7_summarySTREMEMAC101_LU439_filt_6mA <- MicrobeMod_cutoff0_7_summarySTREMEMAC101_LU439 %>% filter((Motif != "nonassigned") & (Methyl_type == "6mA"))
 
-methylMOTIF6mA <-
-ggplot(MicrobeMod_cutoff0_7_summarySTREMEMAC101_LU439_filt_6mA, aes(x = Sample, y = as.numeric(Nb_sites), fill = Type)) +
+#Removing Motif 5 that has a low E value STREME and counts for 0.3% of 6mA motifs and probable motifs
+MicrobeMod_cutoff0_7_summarySTREMEMAC101_LU439_filt_6mA <- filter(MicrobeMod_cutoff0_7_summarySTREMEMAC101_LU439_filt_6mA, Motif_group == "Motif1" | Motif_group == "Motif2" | Motif_group =="Motif3" | Motif_group =="Motif4")
+
+
+methylMOTIF6mA <- ggplot(MicrobeMod_cutoff0_7_summarySTREMEMAC101_LU439_filt_6mA, aes(x = Sample, y = as.numeric(Nb_sites), fill = Type)) +
   geom_bar(stat = "identity", position = "dodge") +
   facet_wrap(~Motif_group) +
   labs(title = "Methylated motifs identified (6mA)",
@@ -98,17 +101,17 @@ ggsave("MAC101_LU439_Motif_group6mA.png", Motif_6mA_seq, width = 6, height = 8, 
 MicrobeMod_cutoff0_7_summarySTREMEMAC101_filt_4mC <- MicrobeMod_cutoff0_7_summarySTREMEMAC101 %>% filter((Motif != "nonassigned") & (Methyl_type == "4mC"))
 
 methylMOTIF4mC <-
-  ggplot(MicrobeMod_cutoff0_7_summarySTREMEMAC101_filt_4mC, aes(x = Motif_group, y = as.numeric(Nb_sites), fill = Type)) +
+  ggplot(MicrobeMod_cutoff0_7_summarySTREMEMAC101_filt_4mC, aes(x = Sample, y = as.numeric(Nb_sites), fill = Type)) +
   geom_bar(stat = "identity", position = "dodge") +
-  facet_wrap(~Sample) +
+  #facet_wrap(~Sample) +
   labs(title = "Methylated motifs identified (4mC)",
-       x = "4mC motif groups",
+       x = "Sample",
        y = "Number of Sites",
        fill = "") +
   theme_bw() +
   theme(
     plot.title = element_text(size = 16, face = "bold"),
-    axis.text.x = element_text(size = 14),
+    axis.text.x = element_text(angle = 90, hjust = 1, size = 14),
     axis.text.y = element_text(size = 14),
     axis.title.x = element_text(size = 16),
     axis.title.y = element_text(size = 16),
@@ -148,5 +151,3 @@ Motif_4mC_seq <- ggplot(filtered_Motif4mC, aes(x = Motif_group, y = as.numeric(N
         legend.position = "none")
 Motif_4mC_seq
 ggsave("MAC101_Motif_group4mC.png", Motif_4mC_seq, width = 6, height = 8, dpi = 300)
-
-
