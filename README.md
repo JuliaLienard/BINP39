@@ -19,7 +19,7 @@ More specifically, during this project was performed:
 
 2\) DNA methylation analysis of *M. avium* and start looking whether SmO and SmT samples show variation in their methylome patterns and if so, evaluate if variation occurs for differentially expressed genes.
 
-LU439 SmO and SmT genomes were aleady available from previous work. But for MAC101, only a genome at the contig level was on NCBI, and not separated between SmO and SmT phenotypes. For this project, genome assembly was performed using short and long reads sequencing, genomic comparison and annotation were done for this second strain.
+LU439 SmO and SmT genomes were already available from previous work. But for MAC101, only a genome at the contig level was on NCBI, and not separated between SmO and SmT phenotypes. For this project, genome assembly was performed using short and long reads sequencing, genomic comparison and annotation were done for this second strain.
 
 The computations/data handling were enabled by resources provided by the National Academic Infrastructure for Supercomputing in Sweden (NAISS), partially funded by the Swedish Research Council through grant agreement no. 2022-06725.
 
